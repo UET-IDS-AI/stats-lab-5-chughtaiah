@@ -7,26 +7,39 @@ import numpy as np
 
 def exponential_pdf(x, lam=1):
     """
-    Return PDF of exponential distribution.
+    PDF of exponential distribution.
 
-    f(x) = lam * exp(-lam*x) for x >= 0
+    f(x) = lam * exp(-lam*x)  for x >= 0
+    f(x) = 0                  for x < 0
     """
-    pass
+    if x < 0:
+        return 0.0
+    return lam * np.exp(-lam * x)
 
 
 def exponential_interval_probability(a, b, lam=1):
     """
-    Compute P(a < X < b) using analytical formula.
+    Analytical probability P(a < X < b)
+    using CDF of exponential distribution.
+
+    F(x) = 1 - exp(-lam*x)
     """
-    pass
+    Fa = 1 - np.exp(-lam * a)
+    Fb = 1 - np.exp(-lam * b)
+
+    return Fb - Fa
 
 
 def simulate_exponential_probability(a, b, n=100000):
     """
-    Simulate exponential samples and estimate
-    P(a < X < b).
+    Monte-Carlo simulation estimate
+    of P(a < X < b).
     """
-    pass
+    samples = np.random.exponential(scale=1, size=n)
+
+    count = np.sum((samples > a) & (samples < b))
+
+    return count / n
 
 
 # -------------------------------------------------
@@ -35,29 +48,79 @@ def simulate_exponential_probability(a, b, n=100000):
 
 def gaussian_pdf(x, mu, sigma):
     """
-    Return Gaussian PDF.
+    Gaussian probability density function.
+
+    f(x) =
+    1/(sqrt(2*pi)*sigma) * exp(-(x-mu)^2 / (2*sigma^2))
     """
-    pass
+    coeff = 1 / (np.sqrt(2 * np.pi) * sigma)
+    exponent = -((x - mu) ** 2) / (2 * sigma ** 2)
+
+    return coeff * np.exp(exponent)
 
 
 def posterior_probability(time):
     """
-    Compute P(B | X = time)
+    Compute posterior probability P(B | X = time)
     using Bayes rule.
 
-    Priors:
-    P(A)=0.3
-    P(B)=0.7
+    Priors
+    P(A) = 0.3
+    P(B) = 0.7
 
-    Distributions:
-    A ~ N(40,4)
-    B ~ N(45,4)
+    Distributions
+    A ~ N(40, 4)  -> sigma = 2
+    B ~ N(45, 4)  -> sigma = 2
     """
-    pass
+
+    # Priors
+    pA = 0.3
+    pB = 0.7
+
+    # Standard deviation
+    sigma = 2
+
+    # Likelihoods
+    fA = gaussian_pdf(time, 40, sigma)
+    fB = gaussian_pdf(time, 45, sigma)
+
+    # Bayes rule
+    numerator = pB * fB
+    denominator = pA * fA + pB * fB
+
+    return numerator / denominator
 
 
 def simulate_posterior_probability(time, n=100000):
     """
-    Estimate P(B | X=time) using simulation.
+    Estimate posterior probability via simulation.
     """
-    pass
+
+    # Priors
+    pA = 0.3
+    pB = 0.7
+
+    # Sample group labels
+    groups = np.random.choice(["A", "B"], size=n, p=[pA, pB])
+
+    # Generate finishing times
+    times = np.zeros(n)
+
+    for i in range(n):
+        if groups[i] == "A":
+            times[i] = np.random.normal(40, 2)
+        else:
+            times[i] = np.random.normal(45, 2)
+
+    # Identify swimmers close to observed time
+    tolerance = 0.5
+    mask = np.abs(times - time) < tolerance
+
+    if np.sum(mask) == 0:
+        return 0
+
+    selected_groups = groups[mask]
+
+    prob_B = np.sum(selected_groups == "B") / len(selected_groups)
+
+    return prob_B
