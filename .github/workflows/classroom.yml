@@ -1,6 +1,6 @@
 name: Autograding Tests
 'on':
-- push
+- workflow_dispatch
 - repository_dispatch
 permissions:
   checks: write
@@ -19,8 +19,7 @@ jobs:
       with:
         test-name: Q1
         setup-command: pip install numpy pytest
-        command: pytest test_AIstats_lab.py::test_exponential_pdf \ test_AIstats_lab.py::test_exponential_interval
-          \test_AIstats_lab.py::test_exponential_simulation
+        command: pytest test_AIstats_lab.py::test_exponential_pdf  test_AIstats_lab.py::test_exponential_interval  test_AIstats_lab.py::test_exponential_simulation
         timeout: 10
         max-score: 5
     - name: Q2
@@ -29,7 +28,7 @@ jobs:
       with:
         test-name: Q2
         setup-command: pip install numpy pytest
-        command: pytest test_AIstats_lab.py::test_gaussian_pdf \ test_AIstats_lab.py::test_posterior
+        command: pytest test_AIstats_lab.py::test_gaussian_pdf  test_AIstats_lab.py::test_posterior
         timeout: 10
         max-score: 5
     - name: Autograding Reporter
